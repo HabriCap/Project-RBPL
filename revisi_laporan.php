@@ -1,395 +1,446 @@
 <?php
 include "koneksi.php";
 
-/* ================= HANDLE UPDATE ================= */
-if(isset($_POST['simpan_revisi'])){
+$data_nota = mysqli_query($koneksi,"
+SELECT DISTINCT n.id_nota, n.nomor_nota, n.tanggal_nota, n.supplier
+FROM nota n
+JOIN barang b ON b.id_nota = n.id_nota
+WHERE LOWER(b.status_barang) = 'cacat'
+AND (b.status_retur IS NULL OR b.status_retur!='sudah')
+");
 
-    $id_nota = $_POST['id_nota'];
+if(isset($_POST['submit'])){
 
-    for($i=0;$i<count($_POST['id_barang']);$i++){
+    $nomor = $_POST['nomor_retur'];
+    $tanggal = $_POST['tanggal_retur'];
+    $supplier = $_POST['retur_supplier'];
 
-        $id_barang    = $_POST['id_barang'][$i];
-        $jumlah       = $_POST['jumlah'][$i];
-        $status       = $_POST['status_barang'][$i]; // TAMBAHAN: baca status dari hidden input
-        $keterangan   = isset($_POST['keterangan'][$i]) ? $_POST['keterangan'][$i] : '';
-        $hapus        = isset($_POST['hapus_file'][$i]) ? $_POST['hapus_file'][$i] : 0;
-        $fileLama     = isset($_POST['file_lama'][$i]) ? $_POST['file_lama'][$i] : '';
+    $alasan = $_POST['alasan'];
+    $jenis = $_POST['jenis_retur'];
+    $id_barang_list = $_POST['id_barang'];
 
-        /* Kalau status Sesuai, skip update foto & keterangan */
-        if($status == 'Sesuai'){
-            mysqli_query($koneksi,"
-                UPDATE barang SET 
-                jumlah_barang='$jumlah'
-                WHERE id_barang='$id_barang'
-            ");
+    $tanggapan = $_POST['tanggapan'];
+
+    $nama_file_global = "";
+
+    if(isset($_FILES['tindaklanjut']['name']) && $_FILES['tindaklanjut']['name'] != ""){
+        $nama_file_global = time()."_".$_FILES['tindaklanjut']['name'];
+        move_uploaded_file($_FILES['tindaklanjut']['tmp_name'], "uploads/".$nama_file_global);
+    }
+
+    foreach($id_barang_list as $i => $id_brg){
+
+        $cek = mysqli_query($koneksi,"SELECT * FROM retur WHERE id_barang='$id_brg'");
+        if(mysqli_num_rows($cek) > 0){
             continue;
         }
 
-        /* ================= HAPUS FILE ================= */
-        if($hapus == 1){
-            $fileLama = "";
-        }
+        $ket = $alasan[$i];
+        $jns = $jenis[$i];
 
-        /* ================= UPLOAD FILE BARU ================= */
-        if(!empty($_FILES['foto']['name'][$i])){
+        $ambil = mysqli_query($koneksi,"SELECT * FROM barang WHERE id_barang='$id_brg'");
+        $b = mysqli_fetch_assoc($ambil);
 
-            $fileName = $_FILES['foto']['name'][$i];
-            $tmp      = $_FILES['foto']['tmp_name'][$i];
+        $qty = $b['jumlah_barang'];
+        $nama_foto = $b['foto_bukti'];
 
-            $ext     = pathinfo($fileName, PATHINFO_EXTENSION);
-            $newName = "bukti_".time()."_".$i.".".$ext;
-            $path    = "uploads/".$newName;
+        mysqli_query($koneksi,"INSERT INTO retur
+        (id_barang, nomor_retur, tanggal_retur, retur_supplier, jenis_retur, jumlah_cacat, alasan, foto_retur, tanggapan, tindaklanjut)
+        VALUES
+        ('$id_brg','$nomor','$tanggal','$supplier','$jns','$qty','$ket','$nama_foto','$tanggapan','$nama_file_global')");
 
-            if(move_uploaded_file($tmp, $path)){
-                $fileLama = $newName;
-            }
-        }
-
-        /* ================= UPDATE DB ================= */
         mysqli_query($koneksi,"
-            UPDATE barang SET 
-            jumlah_barang='$jumlah',
-            keterangan='$keterangan',
-            foto_bukti='$fileLama'
-            WHERE id_barang='$id_barang'
+        UPDATE barang 
+        SET status_retur='sudah' 
+        WHERE id_barang='$id_brg'
         ");
     }
 
-    /* RESET STATUS */
-    mysqli_query($koneksi,"
-        UPDATE laporan 
-        SET status_laporan='Menunggu Persetujuan'
-        WHERE id_nota='$id_nota'
-    ");
-
-    mysqli_query($koneksi,"
-        UPDATE barang 
-        SET status_retur=NULL 
-        WHERE id_nota='$id_nota'
-    ");
-
-    header("Location: status_success_revisi_laporan.php");
-    exit();
+    header("Location: status_success_input_retur.php");
+    exit;
 }
-
-/* ================= DATA ================= */
-$query = mysqli_query($koneksi,"
-    SELECT n.*, l.catatanrevisi
-    FROM nota n
-    JOIN laporan l ON l.id_nota=n.id_nota
-    WHERE l.status_laporan='Ditolak'
-");
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Input Retur Barang</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-*{font-family:Poppins;margin:0;padding:0;box-sizing:border-box;}
-body{background:#efefef;}
+/* ===== RESET ===== */
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Poppins",sans-serif;
+}
+
+body{
+background:#efefef;
+}
 
 .header{
-    background:#3f7aa3;
-    color:white;
-    padding:18px;
-    display:flex;
-    align-items:center;
-    position:relative;
-    gap:10px;
+background:#3f7aa3;
+color:white;
+padding:18px 20px;
+position:relative;
+display:flex;
+align-items:center;
+gap:12px;
 }
 
-.back{
-    width:35px;height:35px;
-    background:#48b5c1;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+.back-btn{
+width:38px;
+height:38px;
+border-radius:50%;
+background:#48b5c1;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+text-decoration:none;
 }
 
-.circle-big{
-    position:absolute;
-    width:90px;height:90px;
-    background:#5bb7c5;
-    border-radius:50%;
-    right:-20px;
-    top:10px;
+.back-btn img{
+width:20px;
 }
 
-.circle-small{
-    position:absolute;
-    width:40px;height:40px;
-    background:#5bb7c5;
-    border-radius:50%;
-    left:-10px;
-    top:50px;
+.header h2{
+font-size:18px;
+font-weight:500;
+color:white;
 }
 
-.container{padding:20px;}
+.header-circle-big{
+position:absolute;
+width:90px;
+height:90px;
+background:#5bb7c5;
+border-radius:50%;
+right:-20px;
+top:10px;
+}
+
+.header-circle-small{
+position:absolute;
+width:45px;
+height:45px;
+background:#5bb7c5;
+border-radius:50%;
+left:-11px;
+top:50px;
+}
+
+.header-circle-small_2{
+position:absolute;
+width:18px;
+height:18px;
+background:#519eaa;
+border-radius:50%;
+left:0;
+top:22px;
+}
+
+
+.container{
+padding:25px 20px 80px;
+}
 
 .card{
-    background:white;
-    border-radius:20px;
-    padding:20px;
-    margin-bottom:10px;
-    box-shadow:0 10px 25px rgba(0,0,0,0.1);
+background:white;
+padding:22px;
+border-radius:22px;
+box-shadow:0 15px 30px rgba(0,0,0,0.08);
+margin-bottom:40px;
+position:relative;
 }
 
-.input{
-    width:100%;
-    height:40px;
-    border:none;
-    border-radius:12px;
-    background:#e9edf2;
-    margin-top:5px;
-    padding:8px;
+.close-btn{
+position:absolute;
+top:-15px;
+left:20px;
+background:white;
+border:2px solid red;
+border-radius:8px;
+width:30px;
+height:30px;
+display:flex;
+align-items:center;
+justify-content:center;
+color:red;
+font-weight:600;
+font-size:13px;
+cursor:pointer;
 }
 
-.detail{display:none;}
-.detail.show{display:block;}
-
-.catatan{
-    background:#e9edf2;
-    border-radius:12px;
-    padding:10px;
-    margin-top:10px;
-    font-size:12px;
+.form-group{
+margin-bottom:14px;
 }
 
-.box{
-    background:#7ea2b9;
-    border-radius:20px;
-    padding:15px;
-    margin-top:15px;
-    color:white;
+.form-group label{
+font-size:13px;
+font-weight:600;
+color:#111;
 }
 
-.status-row{
-    display:flex;
-    gap:10px;
-    margin-top:10px;
+.form-group input{
+width:100%;
+height:40px;
+border:none;
+border-radius:12px;
+background:#e9edf2;
+padding:0 12px;
+margin-top:5px;
+font-family:"Poppins",sans-serif;
+font-size:13px;
 }
 
-.status-btn{
-    flex:1;
-    padding:6px;
-    border-radius:8px;
-    font-size:12px;
-    text-align:center;
+.barang-box{
+background:#7ea2b9;
+padding:15px;
+border-radius:16px;
+margin-top:15px;
 }
 
-.active-green{background:#00ff66;}
-.active-red{background:red;color:white;}
-.outline-green{border:2px solid #00ff66;}
-.outline-red{border:2px solid red;}
-
-.upload{
-    background:#dcdcdc;
-    border-radius:18px;
-    padding:30px;
-    text-align:center;
-    margin-top:10px;
-    font-size:13px;
-    color:black;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+.barang-title{
+color:white;
+font-size:13px;
+font-weight:500;
+margin-bottom:5px;
 }
 
-.file-btn{
-    display:flex;
-    gap:5px;
-    margin-top:5px;
+.barang-input{
+width:100%;
+height:40px;
+border-radius:12px;
+border:none;
+background:#d7dbe1;
+padding:0 12px;
+margin-bottom:6px;
+font-family:"Poppins",sans-serif;
+font-size:13px;
 }
 
-.file-btn button{
-    flex:1;
-    padding:5px;
-    font-size:11px;
-    border-radius:8px;
-    cursor:pointer;
+textarea.barang-input{
+height:80px;
+padding:10px 12px;
+resize:none;
+overflow-y:auto;
 }
 
-.delete{border:2px solid red;background:white;color:red;}
-.add{border:2px solid #5e91b2;background:white;color:#5e91b2;}
-.active-delete{background:red;color:white;}
-.active-add{background:#5e91b2;color:white;}
-
-.expand{
-    width:40px;height:40px;
-    border-radius:50%;
-    background:#e0e4e8;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin:10px auto 30px;
-    cursor:pointer;
+textarea.barang-input:focus{
+outline:none;
+box-shadow:0 0 0 2px rgba(94,145,178,0.3);
 }
 
-.submit{
-    width:100%;
-    background:#5e91b2;
-    color:white;
-    border:none;
-    padding:12px;
-    border-radius:12px;
-    margin-top:15px;
+
+.upload-box{
+background:#e5e5e5;
+height:90px;
+border-radius:14px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:12px;
+color:#9aa1a7;
+cursor:pointer;
+text-align:center;
+margin-bottom:6px;
+}
+
+
+.tanggapan-box{
+background:#7ea2b9;
+padding:15px;
+border-radius:16px;
+margin-top:20px;
+}
+
+.detail-wrapper{
+max-height:0;
+overflow:hidden;
+transition:0.4s;
+}
+
+.detail-wrapper.show{
+max-height:2000px;
+}
+
+.expand-btn{
+width:42px;
+height:42px;
+border-radius:50%;
+background:#e0e4e8;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+}
+
+.expand-btn.inside{
+position:absolute;
+left:50%;
+transform:translateX(-50%);
+bottom:-20px;
+}
+
+.expand-btn.outside{
+margin:10px auto 0;
+display:flex;
+}
+
+.submit-btn{
+width:100%;
+height:45px;
+border:none;
+border-radius:14px;
+background:#5e91b2;
+color:white;
+font-weight:600;
+font-size:14px;
+cursor:pointer;
+margin-top:12px;
+font-family:"Poppins",sans-serif;
 }
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
-    <div class="back">←</div>
-    <h3>Revisi Laporan</h3>
-    <div class="circle-big"></div>
-    <div class="circle-small"></div>
+    <div class="back-btn">
+        <img src="logo_back.png">
+    </div>
+    <h2>Input Retur Barang</h2>
+    <div class="header-circle-big"></div>
+    <div class="header-circle-small"></div>
+    <div class="header-circle-small_2"></div>
 </div>
 
 <div class="container">
 
-<?php while($n=mysqli_fetch_assoc($query)){ ?>
-
 <form method="POST" enctype="multipart/form-data">
 
-<input type="hidden" name="id_nota" value="<?= $n['id_nota'] ?>">
+<?php $no=1; while($n = mysqli_fetch_assoc($data_nota)) { ?>
 
 <div class="card">
 
-    <label>Nomer Nota</label>
-    <input class="input" value="<?= $n['nomor_nota'] ?>" readonly>
+    <div class="close-btn">✖</div>
 
-    <label>Tanggal Nota</label>
-    <input class="input" value="<?= $n['tanggal_nota'] ?>" readonly>
+    <input type="hidden" name="id_nota" value="<?= $n['id_nota'] ?>">
 
-    <div class="detail" id="detail-<?= $n['id_nota'] ?>">
+    <div class="form-group">
+        <label>Nomer Nota</label>
+        <input name="nomor_retur" value="<?= $n['nomor_nota'] ?>" readonly>
+    </div>
 
+    <div class="form-group">
+        <label>Tanggal Nota</label>
+        <input type="date" name="tanggal_retur" value="<?= $n['tanggal_nota'] ?>" readonly>
+    </div>
+
+    <div class="form-group" id="supplier-<?= $no ?>" style="display:none;">
         <label>Nama Supplier</label>
-        <input class="input" value="<?= $n['supplier'] ?>" readonly>
+        <input name="retur_supplier" value="<?= $n['supplier'] ?>" readonly>
+    </div>
 
-        <label>Catatan Revisi</label>
-        <div class="catatan"><?= $n['catatanrevisi'] ?></div>
+    <div class="expand-btn inside" id="btn-inside-<?= $no ?>" onclick="toggleDetail('<?= $no ?>')">
+        ▼
+    </div>
+
+    <div class="detail-wrapper" id="detail-<?= $no ?>">
 
         <?php
-        $barang = mysqli_query($koneksi,"SELECT * FROM barang WHERE id_nota='".$n['id_nota']."'");
-        $i=0;
+        $data_barang = mysqli_query($koneksi,"
+            SELECT * FROM barang
+            WHERE id_nota = '".$n['id_nota']."'
+            AND LOWER(status_barang)='cacat'
+        ");
 
-        while($b=mysqli_fetch_assoc($barang)){
+        while($b = mysqli_fetch_assoc($data_barang)){
         ?>
 
-        <div class="box">
+        <div class="barang-box">
 
-            <div><b>Barang ke-<?= $i+1 ?></b></div>
+            <div class="barang-title">Nama Barang</div>
+            <input class="barang-input" value="<?= $b['nama_barang'] ?>" readonly>
 
-            <input class="input" value="<?= $b['nama_barang'] ?>" readonly>
+            <div class="barang-title">Jumlah</div>
+            <input class="barang-input" value="<?= $b['jumlah_barang'] ?>" readonly>
 
-            <div><b>Jumlah</b></div>
-            <input name="jumlah[]" class="input" value="<?= $b['jumlah_barang'] ?>">
-
-            <div class="status-row">
-                <div class="status-btn <?= $b['status_barang']=='Sesuai'?'active-green':'outline-green' ?>">Sesuai</div>
-                <div class="status-btn <?= $b['status_barang']=='Cacat'?'active-red':'outline-red' ?>">Cacat</div>
+            <div class="barang-title">Lampiran Bukti</div>
+            <div class="upload-box" onclick="openFile('<?= $b['foto_bukti'] ?>')">
+                <?= !empty($b['foto_bukti']) ? $b['foto_bukti'] : 'Tidak ada file' ?>
             </div>
 
-            <?php if($b['status_barang']=='Cacat'){ ?>
+            <div class="barang-title">Keterangan / Keluhan</div>
+            <textarea name="alasan[]" class="barang-input"><?= $b['keterangan'] ?></textarea>
 
-            <div><b>Lampiran Bukti</b></div>
-
-            <div class="upload" 
-                 id="file-text-<?= $i ?>" 
-                 data-file="<?= $b['foto_bukti'] ?>"
-                 onclick="openFile(this)">
-                <?= $b['foto_bukti'] ? $b['foto_bukti'] : "Tidak ada file" ?>
-            </div>
-
-            <div class="file-btn">
-                <button type="button" class="delete" onclick="hapusFile(this,<?= $i ?>)">Hapus</button>
-                <button type="button" class="add" onclick="tambahFile(this,<?= $i ?>)">Tambah</button>
-            </div>
-
-            <input type="file" name="foto[]" id="file-<?= $i ?>" style="display:none;">
-            <input type="hidden" name="hapus_file[]" value="0" id="hapus-<?= $i ?>">
-            <input type="hidden" name="file_lama[]" value="<?= $b['foto_bukti'] ?>">
-
-            <div><b>Keterangan</b></div>
-            <textarea name="keterangan[]" class="input"><?= $b['keterangan'] ?></textarea>
-
-            <?php } else { ?>
-            <!-- ✅ FIX: Dummy hidden inputs untuk barang Sesuai agar index array tetap sinkron -->
-            <input type="file"   name="foto[]"      id="file-<?= $i ?>" style="display:none;">
-            <input type="hidden" name="hapus_file[]" value="0">
-            <input type="hidden" name="file_lama[]"  value="">
-            <input type="hidden" name="keterangan[]" value="">
-            <?php } ?>
-
-            <!-- ✅ FIX: Tambah hidden input status_barang agar PHP tahu mana Sesuai/Cacat -->
-            <input type="hidden" name="status_barang[]" value="<?= $b['status_barang'] ?>">
             <input type="hidden" name="id_barang[]" value="<?= $b['id_barang'] ?>">
+            <input type="hidden" name="jenis_retur[]" value="<?= $b['jenis_barang'] ?>">
 
         </div>
 
-        <?php $i++; } ?>
+        <?php } ?>
 
-        <button type="submit" name="simpan_revisi" class="submit">
-            Simpan Hasil Revisi Laporan
+        <div class="tanggapan-box">
+            <div class="barang-title">Tanggapan & Tindak Lanjut Supplier</div>
+            <textarea name="tanggapan" class="barang-input"></textarea>
+
+            <div class="barang-title">Lampiran Bukti Tindak Lanjut (Opt.)</div>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+                Klik upload dokumen
+                <input type="file" name="tindaklanjut" hidden>
+            </div>
+        </div>
+
+        <button class="submit-btn" name="submit">
+            Simpan Data Retur Barang
         </button>
 
     </div>
 
 </div>
 
-<div class="expand" onclick="toggle('<?= $n['id_nota'] ?>')">⌄</div>
+<div class="expand-btn outside" id="btn-outside-<?= $no ?>" onclick="toggleDetail('<?= $no ?>')" style="display:none;">
+    ▲
+</div>
+
+<?php $no++; } ?>
 
 </form>
-
-<?php } ?>
 
 </div>
 
 <script>
-function toggle(id){
-    let d=document.getElementById("detail-"+id);
-    d.classList.toggle("show");
-}
+function toggleDetail(id){
+    let detail = document.getElementById("detail-"+id);
+    let insideBtn = document.getElementById("btn-inside-"+id);
+    let outsideBtn = document.getElementById("btn-outside-"+id);
+    let supplier = document.getElementById("supplier-"+id);
 
-function openFile(el){
-    let file = el.dataset.file;
-    if(file){
-        window.open("uploads/"+file,"_blank");
+    detail.classList.toggle("show");
+
+    if(detail.classList.contains("show")){
+        insideBtn.style.display = "none";
+        outsideBtn.style.display = "flex";
+        if(supplier) supplier.style.display = "block";
+    } else {
+        insideBtn.style.display = "flex";
+        outsideBtn.style.display = "none";
+        if(supplier) supplier.style.display = "none";
     }
 }
 
-function hapusFile(btn,i){
-    let box = document.getElementById("file-text-"+i);
-    box.innerText = "Tidak ada file";
-    box.dataset.file = "";
-    document.getElementById("hapus-"+i).value = 1;
-    btn.classList.add("active-delete");
-    btn.nextElementSibling.classList.remove("active-add");
-}
-
-function tambahFile(btn,i){
-    let input = document.getElementById("file-"+i);
-    let box   = document.getElementById("file-text-"+i);
-
-    input.click();
-
-    btn.classList.add("active-add");
-    btn.previousElementSibling.classList.remove("active-delete");
-
-    input.onchange = function(){
-        let file = this.files[0];
-        if(file){
-            box.innerText = file.name;
-            box.dataset.file = file.name;
-            document.getElementById("hapus-"+i).value = 0;
-        }
-    };
+function openFile(file){
+    if(file){
+        window.open("uploads/"+file,"_blank");
+    }
 }
 </script>
 
