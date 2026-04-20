@@ -30,7 +30,6 @@ if(isset($_POST['submit'])){
 
     foreach($id_barang_list as $i => $id_brg){
 
-        // 🔥 CEK DUPLIKASI
         $cek = mysqli_query($koneksi,"SELECT * FROM retur WHERE id_barang='$id_brg'");
         if(mysqli_num_rows($cek) > 0){
             continue;
@@ -66,26 +65,97 @@ if(isset($_POST['submit'])){
 <html lang="id">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Input Retur Barang</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
-body{background:#efefef;}
+/* ===== RESET ===== */
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Poppins",sans-serif;
+}
 
-.header{background:#3f7aa3;color:white;padding:18px 20px;display:flex;align-items:center;gap:12px;}
-.back-btn{width:38px;height:38px;border-radius:50%;background:#48b5c1;display:flex;align-items:center;justify-content:center;}
-.header h2{font-size:18px;}
+body{
+background:#efefef;
+}
 
-.container{padding:25px 20px;}
+.header{
+background:#3f7aa3;
+color:white;
+padding:18px 20px;
+position:relative;
+display:flex;
+align-items:center;
+gap:12px;
+}
+
+.back-btn{
+width:38px;
+height:38px;
+border-radius:50%;
+background:#48b5c1;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+text-decoration:none;
+}
+
+.back-btn img{
+width:20px;
+}
+
+.header h2{
+font-size:18px;
+font-weight:500;
+color:white;
+}
+
+.header-circle-big{
+position:absolute;
+width:90px;
+height:90px;
+background:#5bb7c5;
+border-radius:50%;
+right:-20px;
+top:10px;
+}
+
+.header-circle-small{
+position:absolute;
+width:45px;
+height:45px;
+background:#5bb7c5;
+border-radius:50%;
+left:-11px;
+top:50px;
+}
+
+.header-circle-small_2{
+position:absolute;
+width:18px;
+height:18px;
+background:#519eaa;
+border-radius:50%;
+left:0;
+top:22px;
+}
+
+
+.container{
+padding:25px 20px 80px;
+}
 
 .card{
-margin-top:25px;
 background:white;
-padding:20px;
+padding:22px;
 border-radius:22px;
 box-shadow:0 15px 30px rgba(0,0,0,0.08);
+margin-bottom:40px;
 position:relative;
 }
 
@@ -96,41 +166,98 @@ left:20px;
 background:white;
 border:2px solid red;
 border-radius:8px;
-width:30px;height:30px;
-display:flex;align-items:center;justify-content:center;
-color:red;font-weight:bold;
+width:30px;
+height:30px;
+display:flex;
+align-items:center;
+justify-content:center;
+color:red;
+font-weight:600;
+font-size:13px;
+cursor:pointer;
+}
+
+.form-group{
+margin-bottom:14px;
+}
+
+.form-group label{
+font-size:13px;
+font-weight:600;
+color:#111;
 }
 
 .form-group input{
-width:100%;height:40px;border:none;border-radius:12px;
-background:#e9edf2;padding:0 12px;
+width:100%;
+height:40px;
+border:none;
+border-radius:12px;
+background:#e9edf2;
+padding:0 12px;
+margin-top:5px;
+font-family:"Poppins",sans-serif;
+font-size:13px;
+}
+
+.barang-box{
+background:#7ea2b9;
+padding:15px;
+border-radius:16px;
+margin-top:15px;
 }
 
 .barang-title{
 color:white;
 font-size:13px;
+font-weight:500;
 margin-bottom:5px;
 }
 
 .barang-input{
 width:100%;
-border-radius:10px;
+height:40px;
+border-radius:12px;
 border:none;
 background:#d7dbe1;
-padding:8px;
+padding:0 12px;
 margin-bottom:6px;
+font-family:"Poppins",sans-serif;
+font-size:13px;
 }
 
+textarea.barang-input{
+height:80px;
+padding:10px 12px;
+resize:none;
+overflow-y:auto;
+}
+
+textarea.barang-input:focus{
+outline:none;
+box-shadow:0 0 0 2px rgba(94,145,178,0.3);
+}
+
+
 .upload-box{
-background:#d7dbe1;
+background:#e5e5e5;
 height:90px;
 border-radius:14px;
 display:flex;
 align-items:center;
 justify-content:center;
 font-size:12px;
-color:#777;
+color:#9aa1a7;
 cursor:pointer;
+text-align:center;
+margin-bottom:6px;
+}
+
+
+.tanggapan-box{
+background:#7ea2b9;
+padding:15px;
+border-radius:16px;
+margin-top:20px;
 }
 
 .detail-wrapper{
@@ -143,36 +270,11 @@ transition:0.4s;
 max-height:2000px;
 }
 
-.submit-btn{
-width:100%;
-height:45px;
-border:none;
-border-radius:14px;
-background:#5e91b2;
-color:white;
-font-weight:600;
-margin-top:12px;
-}
-
-.barang-box{
-background:#7ea2b9;
-padding:15px;
-border-radius:16px;
-margin-top:15px;
-}
-
-.tanggapan-box{
-background:#7ea2b9;
-padding:15px;
-border-radius:16px;
-margin-top:20px;
-}
-
 .expand-btn{
 width:42px;
 height:42px;
 border-radius:50%;
-background:#dfe3e8;
+background:#e0e4e8;
 display:flex;
 align-items:center;
 justify-content:center;
@@ -191,24 +293,33 @@ margin:10px auto 0;
 display:flex;
 }
 
-textarea.barang-input{
-resize:none;
-height:80px;
-overflow-y:auto;
-}
-
-textarea.barang-input:focus{
-outline:none;
-box-shadow:0 0 0 2px rgba(94,145,178,0.3);
+.submit-btn{
+width:100%;
+height:45px;
+border:none;
+border-radius:14px;
+background:#5e91b2;
+color:white;
+font-weight:600;
+font-size:14px;
+cursor:pointer;
+margin-top:12px;
+font-family:"Poppins",sans-serif;
 }
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
-<div class="back-btn">←</div>
-<h2>Input Retur Barang</h2>
+    <div class="back-btn">
+        <img src="logo_back.png">
+    </div>
+    <h2>Input Retur Barang</h2>
+    <div class="header-circle-big"></div>
+    <div class="header-circle-small"></div>
+    <div class="header-circle-small_2"></div>
 </div>
 
 <div class="container">
@@ -219,87 +330,85 @@ box-shadow:0 0 0 2px rgba(94,145,178,0.3);
 
 <div class="card">
 
-<div class="close-btn">✖</div>
+    <div class="close-btn">✖</div>
 
-<input type="hidden" name="id_nota" value="<?= $n['id_nota'] ?>">
+    <input type="hidden" name="id_nota" value="<?= $n['id_nota'] ?>">
 
-<div class="form-group">
-<label>Nomer Nota</label>
-<input name="nomor_retur" value="<?= $n['nomor_nota'] ?>" readonly>
-</div>
+    <div class="form-group">
+        <label>Nomer Nota</label>
+        <input name="nomor_retur" value="<?= $n['nomor_nota'] ?>" readonly>
+    </div>
 
-<div class="form-group">
-<label>Tanggal Nota</label>
-<input type="date" name="tanggal_retur" value="<?= $n['tanggal_nota'] ?>" readonly>
-</div>
+    <div class="form-group">
+        <label>Tanggal Nota</label>
+        <input type="date" name="tanggal_retur" value="<?= $n['tanggal_nota'] ?>" readonly>
+    </div>
 
-<!-- 🔥 supplier disembunyikan -->
-<div class="form-group" id="supplier-<?= $no ?>" style="display:none;">
-<label>Nama Supplier</label>
-<input name="retur_supplier" value="<?= $n['supplier'] ?>" readonly>
-</div>
+    <div class="form-group" id="supplier-<?= $no ?>" style="display:none;">
+        <label>Nama Supplier</label>
+        <input name="retur_supplier" value="<?= $n['supplier'] ?>" readonly>
+    </div>
 
-<div class="expand-btn inside" id="btn-inside-<?= $no ?>" onclick="toggleDetail('<?= $no ?>')">
-▼
-</div>
+    <div class="expand-btn inside" id="btn-inside-<?= $no ?>" onclick="toggleDetail('<?= $no ?>')">
+        ▼
+    </div>
 
-<div class="detail-wrapper" id="detail-<?= $no ?>">
+    <div class="detail-wrapper" id="detail-<?= $no ?>">
 
-<?php
-$data_barang = mysqli_query($koneksi,"
-SELECT *
-FROM barang
-WHERE id_nota = '".$n['id_nota']."'
-AND LOWER(status_barang)='cacat'
-");
+        <?php
+        $data_barang = mysqli_query($koneksi,"
+            SELECT * FROM barang
+            WHERE id_nota = '".$n['id_nota']."'
+            AND LOWER(status_barang)='cacat'
+        ");
 
-while($b = mysqli_fetch_assoc($data_barang)){
-?>
+        while($b = mysqli_fetch_assoc($data_barang)){
+        ?>
 
-<div class="barang-box">
+        <div class="barang-box">
 
-<input class="barang-input" value="<?= $b['nama_barang'] ?>" readonly>
+            <div class="barang-title">Nama Barang</div>
+            <input class="barang-input" value="<?= $b['nama_barang'] ?>" readonly>
 
-<div class="barang-title">Jumlah</div>
-<input class="barang-input" value="<?= $b['jumlah_barang'] ?>" readonly>
+            <div class="barang-title">Jumlah</div>
+            <input class="barang-input" value="<?= $b['jumlah_barang'] ?>" readonly>
 
-<div class="barang-title">Lampiran Bukti</div>
+            <div class="barang-title">Lampiran Bukti</div>
+            <div class="upload-box" onclick="openFile('<?= $b['foto_bukti'] ?>')">
+                <?= !empty($b['foto_bukti']) ? $b['foto_bukti'] : 'Tidak ada file' ?>
+            </div>
 
-<div class="upload-box" onclick="openFile('<?= $b['foto_bukti'] ?>')">
-<?= !empty($b['foto_bukti']) ? $b['foto_bukti'] : 'Tidak ada file' ?>
-</div>
+            <div class="barang-title">Keterangan / Keluhan</div>
+            <textarea name="alasan[]" class="barang-input"><?= $b['keterangan'] ?></textarea>
 
-<div class="barang-title">Keterangan / Keluhan</div>
-<textarea name="alasan[]" class="barang-input"><?= $b['keterangan'] ?></textarea>
+            <input type="hidden" name="id_barang[]" value="<?= $b['id_barang'] ?>">
+            <input type="hidden" name="jenis_retur[]" value="<?= $b['jenis_barang'] ?>">
 
-<input type="hidden" name="id_barang[]" value="<?= $b['id_barang'] ?>">
-<input type="hidden" name="jenis_retur[]" value="<?= $b['jenis_barang'] ?>">
+        </div>
 
-</div>
+        <?php } ?>
 
-<?php } ?>
+        <div class="tanggapan-box">
+            <div class="barang-title">Tanggapan & Tindak Lanjut Supplier</div>
+            <textarea name="tanggapan" class="barang-input"></textarea>
 
-<div class="tanggapan-box">
-<div class="barang-title">Tanggapan & Tindak Lanjut Supplier</div>
-<textarea name="tanggapan" class="barang-input"></textarea>
+            <div class="barang-title">Lampiran Bukti Tindak Lanjut (Opt.)</div>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+                Klik upload dokumen
+                <input type="file" name="tindaklanjut" hidden>
+            </div>
+        </div>
 
-<div class="barang-title">Lampiran Bukti Tindak Lanjut (Opt.)</div>
-<div class="upload-box" onclick="this.querySelector('input').click()">
-Klik upload dokumen
-<input type="file" name="tindaklanjut" hidden>
-</div>
-</div>
+        <button class="submit-btn" name="submit">
+            Simpan Data Retur Barang
+        </button>
 
-<button class="submit-btn" name="submit">
-Simpan Data Retur Barang
-</button>
-
-</div>
+    </div>
 
 </div>
 
 <div class="expand-btn outside" id="btn-outside-<?= $no ?>" onclick="toggleDetail('<?= $no ?>')" style="display:none;">
-▲
+    ▲
 </div>
 
 <?php $no++; } ?>
