@@ -16,7 +16,7 @@ $query_nota = mysqli_query($koneksi,"SELECT * FROM nota WHERE status='Sudah Dice
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-
+/* ===== RESET ===== */
 *{
 margin:0;
 padding:0;
@@ -28,8 +28,7 @@ body{
 background:#efefef;
 }
 
-/* HEADER */
-
+/* ===== HEADER (sama persis input_nota) ===== */
 .header{
 background:#3f7aa3;
 color:white;
@@ -48,13 +47,21 @@ background:#48b5c1;
 display:flex;
 align-items:center;
 justify-content:center;
+cursor:pointer;
+text-decoration:none;
+}
+
+.back-btn img{
+width:20px;
 }
 
 .header h2{
 font-size:18px;
 font-weight:500;
+color:white;
 }
 
+/* ===== HEADER DECORATION (sama persis input_nota) ===== */
 .header-circle-big{
 position:absolute;
 width:90px;
@@ -75,14 +82,22 @@ left:-11px;
 top:50px;
 }
 
-/* CONTENT */
+.header-circle-small_2{
+position:absolute;
+width:18px;
+height:18px;
+background:#519eaa;
+border-radius:50%;
+left:0;
+top:22px;
+}
 
+/* ===== CONTAINER ===== */
 .container{
 padding:25px 20px 80px;
 }
 
-/* CARD */
-
+/* ===== CARD (sama persis input_nota) ===== */
 .card{
 background:white;
 padding:22px;
@@ -92,8 +107,7 @@ margin-bottom:40px;
 position:relative;
 }
 
-/* FORM */
-
+/* ===== FORM GROUP (sama persis input_nota) ===== */
 .form-group{
 margin-bottom:14px;
 }
@@ -101,6 +115,7 @@ margin-bottom:14px;
 .form-group label{
 font-size:13px;
 font-weight:600;
+color:#111;
 }
 
 .form-group input{
@@ -111,10 +126,11 @@ border-radius:12px;
 background:#e9edf2;
 padding:0 12px;
 margin-top:5px;
+font-family:"Poppins",sans-serif;
+font-size:13px;
 }
 
-/* COLLAPSE */
-
+/* ===== COLLAPSE ===== */
 .detail-wrapper{
 max-height:0;
 overflow:hidden;
@@ -125,8 +141,7 @@ transition:0.5s;
 max-height:2000px;
 }
 
-/* JENIS */
-
+/* ===== JENIS LIST (sama persis input_nota) ===== */
 .jenis-list{
 display:flex;
 flex-wrap:wrap;
@@ -144,13 +159,12 @@ background:#f5f6f8;
 }
 
 .jenis-active{
-background:#7ea8b6;
+background:#7ea2b9;
 color:white;
 border:none;
 }
 
-/* BARANG */
-
+/* ===== BARANG BOX (sama persis input_nota wrapper) ===== */
 .barang-box{
 background:#7ea2b9;
 padding:15px;
@@ -161,30 +175,37 @@ margin-top:12px;
 .barang-title{
 color:white;
 font-size:13px;
+font-weight:500;
 margin-bottom:5px;
 }
 
 .barang-input{
 width:100%;
-height:36px;
-border-radius:10px;
+height:40px;
+border-radius:12px;
 border:none;
 background:#d7dbe1;
-padding:8px;
+padding:0 12px;
 margin-bottom:6px;
+font-family:"Poppins",sans-serif;
+font-size:13px;
 }
 
 .label-white{
 color:white;
 font-size:12px;
+font-weight:500;
 }
 
+/* ===== STATUS BADGE ===== */
 .status{
 display:inline-block;
 padding:4px 12px;
 border-radius:10px;
 font-size:12px;
+font-weight:500;
 margin-top:4px;
+margin-bottom:6px;
 }
 
 .status-sesuai{
@@ -197,28 +218,20 @@ background:red;
 color:white;
 }
 
-/* FOTO */
-
-.foto-box{
-background:#d7dbe1;
-border-radius:12px;
-padding:10px;
-font-size:12px;
-margin-top:6px;
-}
-
-/* KETERANGAN */
-
+/* ===== FOTO & KETERANGAN BOX ===== */
+.foto-box,
 .keterangan-box{
+width:100%;
 background:#d7dbe1;
 border-radius:12px;
-padding:10px;
+padding:10px 12px;
 font-size:12px;
+font-family:"Poppins",sans-serif;
 margin-top:6px;
+margin-bottom:6px;
 }
 
-/* EXPAND BUTTON */
-
+/* ===== EXPAND BUTTON (sama persis input_nota gaya) ===== */
 .expand-btn{
 position:absolute;
 bottom:-22px;
@@ -227,7 +240,7 @@ transform:translateX(-50%);
 width:42px;
 height:42px;
 border-radius:50%;
-background:#e2e8f0;
+background:#e0e4e8;
 display:flex;
 justify-content:center;
 align-items:center;
@@ -237,28 +250,26 @@ cursor:pointer;
 
 .expand-btn img{
 transition:0.3s;
+width:18px;
 }
 
 .expand-btn.active img{
 transform:rotate(180deg);
 }
-
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
-
-<a href="User_Kasir.php" class="back-btn">
-<img src="logo_back.png" width="18">
-</a>
-
-<h2>Lihat Hasil Pemeriksaan Barang</h2>
-
-<div class="header-circle-big"></div>
-<div class="header-circle-small"></div>
-
+    <a href="User_Kasir.php" class="back-btn">
+        <img src="logo_back.png">
+    </a>
+    <h2>Lihat Hasil Pemeriksaan Barang</h2>
+    <div class="header-circle-big"></div>
+    <div class="header-circle-small"></div>
+    <div class="header-circle-small_2"></div>
 </div>
 
 <div class="container">
@@ -272,118 +283,90 @@ $query_barang=mysqli_query($koneksi,"SELECT * FROM barang WHERE id_nota='$id_not
 $query_jenis=mysqli_query($koneksi,"SELECT DISTINCT jenis_barang FROM barang WHERE id_nota='$id_nota'");
 
 $jenis_aktif=[];
-
 while($j=mysqli_fetch_assoc($query_jenis)){
-$jenis_aktif[]=$j['jenis_barang'];
+    $jenis_aktif[]=$j['jenis_barang'];
 }
 ?>
 
 <div class="card" id="card-<?php echo $id_nota; ?>">
 
-<!-- DATA YANG SELALU TAMPIL -->
+    <!-- DATA YANG SELALU TAMPIL -->
+    <div class="form-group">
+        <label>Nomer Nota</label>
+        <input value="<?php echo $nota['nomor_nota']; ?>" readonly>
+    </div>
 
-<div class="form-group">
-<label>Nomer Nota</label>
-<input value="<?php echo $nota['nomor_nota']; ?>" readonly>
-</div>
+    <div class="form-group">
+        <label>Tanggal Nota</label>
+        <input value="<?php echo $nota['tanggal_nota']; ?>" readonly>
+    </div>
 
-<div class="form-group">
-<label>Tanggal Nota</label>
-<input value="<?php echo $nota['tanggal_nota']; ?>" readonly>
-</div>
+    <!-- DETAIL -->
+    <div class="detail-wrapper" id="detail-<?php echo $id_nota; ?>">
 
-<!-- DETAIL -->
+        <div class="form-group">
+            <label>Nama Supplier</label>
+            <input value="<?php echo $nota['supplier']; ?>" readonly>
+        </div>
 
-<div class="detail-wrapper" id="detail-<?php echo $id_nota; ?>">
+        <label style="font-size:13px;font-weight:600;">Jenis Barang</label>
+        <div class="jenis-list">
+        <?php
+        $semua_jenis=[
+            "Material Bangunan",
+            "Besi & Logam",
+            "Keramik & Lantai",
+            "Alat Pertukangan",
+            "Kayu & Olahan",
+            "Listrik"
+        ];
 
-<div class="form-group">
-<label>Nama Supplier</label>
-<input value="<?php echo $nota['supplier']; ?>" readonly>
-</div>
+        foreach($semua_jenis as $jenis){
+            $class = in_array($jenis,$jenis_aktif) ? "jenis-item jenis-active" : "jenis-item";
+        ?>
+            <span class="<?php echo $class; ?>"><?php echo $jenis; ?></span>
+        <?php } ?>
+        </div>
 
-<label>Jenis Barang</label>
+        <?php
+        $no=1;
+        while($barang=mysqli_fetch_assoc($query_barang)){
+        ?>
 
-<div class="jenis-list">
+        <div class="barang-box">
 
-<?php
-$semua_jenis=[
-"Material Bangunan",
-"Besi & Logam",
-"Keramik & Lantai",
-"Alat Pertukangan",
-"Kayu & Olahan",
-"Listrik"
-];
+            <div class="barang-title">Barang ke-<?php echo $no; ?></div>
 
-foreach($semua_jenis as $jenis){
+            <input class="barang-input" value="<?php echo $barang['nama_barang']; ?>" readonly>
 
-if(in_array($jenis,$jenis_aktif)){
-$class="jenis-item jenis-active";
-}else{
-$class="jenis-item";
-}
-?>
+            <label class="label-white">Jumlah</label>
+            <input class="barang-input" value="<?php echo $barang['jumlah_barang']; ?>" readonly>
 
-<span class="<?php echo $class; ?>">
-<?php echo $jenis; ?>
-</span>
+            <label class="label-white">Status</label>
+            <div class="status <?php echo ($barang['status_barang']=='Cacat') ? 'status-cacat' : 'status-sesuai'; ?>">
+                <?php echo $barang['status_barang']; ?>
+            </div>
 
-<?php } ?>
+            <?php if($barang['status_barang']=='Cacat'){ ?>
 
-</div>
+            <div style="margin-top:10px;"></div>
+            <label class="label-white">Foto Bukti</label>
+            <div class="foto-box"><?php echo $barang['foto_bukti']; ?></div>
 
-<?php
-$no=1;
-while($barang=mysqli_fetch_assoc($query_barang)){
-?>
+            <label class="label-white">Keterangan / Keluhan</label>
+            <div class="keterangan-box"><?php echo $barang['keterangan']; ?></div>
 
-<div class="barang-box">
+            <?php } ?>
 
-<div class="barang-title">
-Barang ke-<?php echo $no; ?>
-</div>
+        </div>
 
-<input class="barang-input" value="<?php echo $barang['nama_barang']; ?>" readonly>
+        <?php $no++; } ?>
 
-<label class="label-white">Jumlah</label>
-<input class="barang-input" value="<?php echo $barang['jumlah_barang']; ?>" readonly>
+    </div>
 
-<label class="label-white">Status</label>
-
-<div class="status <?php echo ($barang['status_barang']=="Cacat") ? 'status-cacat' : 'status-sesuai'; ?>">
-<?php echo $barang['status_barang']; ?>
-</div>
-
-<?php if($barang['status_barang']=="Cacat"){ ?>
-
-<div style="margin-top:10px;"></div>
-<label class="label-white">Foto Bukti</label>
-
-<div class="foto-box">
-<?php echo $barang['foto_bukti']; ?>
-</div>
-
-<label class="label-white">Keterangan / Keluhan</label>
-
-<div class="keterangan-box">
-<?php echo $barang['keterangan']; ?>
-</div>
-
-<?php } ?>
-
-</div>
-
-<?php
-$no++;
-}
-?>
-
-</div>
-
-<div class="expand-btn"
-onclick="toggleNota('<?php echo $id_nota; ?>',this)">
-<img src="logo_down.png">
-</div>
+    <div class="expand-btn" onclick="toggleNota('<?php echo $id_nota; ?>',this)">
+        <img src="logo_down.png">
+    </div>
 
 </div>
 
@@ -392,16 +375,11 @@ onclick="toggleNota('<?php echo $id_nota; ?>',this)">
 </div>
 
 <script>
-
 function toggleNota(id,btn){
-
-var detail = document.getElementById("detail-"+id);
-
-detail.classList.toggle("show");
-btn.classList.toggle("active");
-
+    var detail = document.getElementById("detail-"+id);
+    detail.classList.toggle("show");
+    btn.classList.toggle("active");
 }
-
 </script>
 
 </body>
